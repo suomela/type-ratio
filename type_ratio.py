@@ -485,7 +485,7 @@ class TimeSeries:
             loader=jinja2.FileSystemLoader(prog_dir),
             autoescape=True,
         )
-        jtempl = jenv.get_template('tokens.html')
+        jtempl = jenv.get_template('templates/tokens.html')
         with open(filename, 'w') as f:
             f.write(jtempl.render(data))
 
