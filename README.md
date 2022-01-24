@@ -18,6 +18,20 @@ Usage
 Please see https://github.com/suomela/suffix-competition-code for an example of how to use this code.
 
 
+Requirements
+------------
+
+If you use Ubuntu 20.04, installing the following packages should be enough:
+
+    apt-get install -y cmake g++ git python3 python3-jinja2 python3-matplotlib
+
+You can find a suitable Docker image with all the right packages installed here:
+
+    https://hub.docker.com/r/suomela/type-ratio
+
+There is also a [Dockerfile](docker/Dockerfile] you can use to create your own Docker image.
+
+
 Author
 ------
 
