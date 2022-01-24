@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ title }}</title>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;800&display=swap" rel="stylesheet">
+    <style>
+
+        html, body, div, span, h1, h2, p, ol, ul, li, a, img, blockquote, code, pre, table, tr, th, td {
+            margin: 0px;
+            padding: 0px;
+            border: 0px;
+            outline: 0px;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        body {
+            color: #000;
+            background-color: #ffffff;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 400;
+            font-size: 16px;
+            padding: 0px;
+            margin: 20px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        table {
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        .token {
+            vertical-align: middle;
+            padding-right: 10px;
+        }
+        .num { text-align: right; }
+        .bar {
+            display: block;
+            width: 40px;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        .barstack0 {
+            margin-top: 10px;
+        }
+        .barstack1 {
+            margin-bottom: 10px;
+        }
+        .bara0 {
+            background: #f26924;
+        }
+        .barb0 {
+            background: #f2692480;
+        }
+        .bara1 {
+            background: #0088cc;
+        }
+        .barb1 {
+            background: #0088cc80;
+        }
+        .elem {
+            min-height: 30px;
+        }
+        .token0, .ds0, .elem0 {
+            vertical-align: bottom;
+            border-bottom: 1px solid #c0c0c0;
+        }
+        .token1, .ds1, .elem1 {
+            vertical-align: top;
+        }
+        .ds {
+            font-size: 12px;
+            text-align: right;
+        }
+        .ds0 {
+            color: #f26924;
+        }
+        .ds1 {
+            color: #0088cc;
+        }
+        .ch1 {
+            text-align: center;
+        }
+        .ch2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}{% if subtitle %}: {{ subtitle }}{% endif %}</h1>
+    <p>{{ notes }}</p>
+    <table>
+        <tr>
+            <td></td>
+            <td></td>
+            {% for col in columns %}
+                <td class="ch1">{{ col.label }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            {% for col in columns %}
+                <td class="ch2">{{ col.label2 }}</td>
+            {% endfor %}
+        </tr>
+        {% for token in tokens %}
+            {% for i in [0,1] %}
+                <tr>
+                    <td class="token token{{i}}">{% if i == 0 %}{{ token }}{% endif %}</td>
+                    <td class="ds ds{{i}}">{{ datasets[i] }}</td>
+                    {% for col in columns %}
+                        <td class="elem elem{{i}}" title="{{ counts[i][(token, col.id)] }} tokens">
+                            <div class="barstack barstack{{i}}">
+                                {% if i == 0 %}
+                                    <div class="bar bar{{i}} barb barb{{i}}" style="height: {{ heights2[i][(token, col.id)] }}px">{# counts[i][(token, col.id)] #}</div>
+                                    <div class="bar bar{{i}} bara bara{{i}}" style="height: {{ heights1[i][(token, col.id)] }}px">{# counts[i][(token, col.id)] #}</div>
+                                {% else %}
+                                    <div class="bar bar{{i}} bara bara{{i}}" style="height: {{ heights1[i][(token, col.id)] }}px">{# counts[i][(token, col.id)] #}</div>
+                                    <div class="bar bar{{i}} barb barb{{i}}" style="height: {{ heights2[i][(token, col.id)] }}px">{# counts[i][(token, col.id)] #}</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </table>
+</body>
