@@ -10,6 +10,7 @@ import jinja2
 import markupsafe
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -22,8 +23,10 @@ DIR_IN = os.path.join(DIR, "in")
 DIR_OUT = os.path.join(DIR, "out")
 DIR_RESULT = "type-ratio-result"
 
+
 def _numrow(l):
     return " ".join([str(x) for x in l]) + "\n"
+
 
 def list_periods(samplelist):
     x = set()
@@ -31,27 +34,32 @@ def list_periods(samplelist):
         x |= s.periods
     return sorted(x)
 
+
 def list_colls(samplelist):
     x = set()
     for s in samplelist:
         x |= s.colls
     return sorted(x)
 
+
 def filter_period(samplelist, period):
-    return [ s for s in samplelist if period in s.periods ]
+    return [s for s in samplelist if period in s.periods]
+
 
 def filter_coll(samplelist, coll):
-    return [ s for s in samplelist if coll in s.colls ]
+    return [s for s in samplelist if coll in s.colls]
+
 
 def pretty_period(period):
     a, b = period
     return f"{a}–{b-1}"
 
+
 def lighter(col, w):
     w = w * 0.7 + 0.3
     rgb = mcol.to_rgb(col)
     h, s, v = mcol.rgb_to_hsv(rgb)
-    h, s, v = h, w * s + (1-w) * 0, w * v + (1-w) * 1
+    h, s, v = h, w * s + (1 - w) * 0, w * v + (1 - w) * 1
     return mcol.hsv_to_rgb([h, s, v])
 
 
@@ -64,8 +72,8 @@ class Sample:
         self.label = label
         self.periods = set(periods)
         self.colls = set(colls)
-        self.tokens = [ set(), set() ]
-        self.tokenlists = [ [], [] ]
+        self.tokens = [set(), set()]
+        self.tokenlists = [[], []]
 
     def feed(self, dataset, token):
         self.tokens[dataset].add(token)
@@ -75,16 +83,16 @@ class Sample:
 class Point:
     def __init__(self, samplelist):
         self.samplelist = samplelist
-        self.tokens = [ set(), set() ]
-        self.tokencounts = [ collections.Counter(), collections.Counter() ]
-        self.samplecounts = [ collections.Counter(), collections.Counter() ]
+        self.tokens = [set(), set()]
+        self.tokencounts = [collections.Counter(), collections.Counter()]
+        self.samplecounts = [collections.Counter(), collections.Counter()]
         for s in samplelist:
             for i in range(2):
                 self.tokens[i] |= s.tokens[i]
                 self.tokencounts[i].update(s.tokenlists[i])
                 for t in s.tokens[i]:
                     self.samplecounts[i][t] += 1
-        self.dim = [ len(x) for x in self.tokens ]
+        self.dim = [len(x) for x in self.tokens]
         self.xx = sum(self.dim)
         self.yy = self.dim[0]
 
@@ -98,13 +106,15 @@ class Curve(Point):
         self.is_major = metadata.tick_hook(period)
 
     def calc_write_input(self):
-        self.sorted_tokens = [ sorted(tt) for tt in self.tokens ]
-        self.tokenmaps = [ { t: i for i,t in enumerate(tt) } for tt in self.sorted_tokens ]
+        self.sorted_tokens = [sorted(tt) for tt in self.tokens]
+        self.tokenmaps = [{t: i
+                           for i, t in enumerate(tt)}
+                          for tt in self.sorted_tokens]
         data = []
         for s in self.samplelist:
             row = []
             for di in range(2):
-                part = [ self.tokenmaps[di][t] for t in s.tokens[di] ]
+                part = [self.tokenmaps[di][t] for t in s.tokens[di]]
                 part.sort()
                 row.append(part)
             data.append(row)
@@ -127,7 +137,7 @@ class Curve(Point):
         self.cum = []
         with open(filename) as f:
             for line in f:
-                values = [ int(v) for v in line.rstrip().split() ]
+                values = [int(v) for v in line.rstrip().split()]
                 first, last = values[:2]
                 rest = values[2:]
                 assert 0 <= first <= last <= self.yy + 1
@@ -173,14 +183,14 @@ class Curve(Point):
     def get_med(self, xx):
         a = self.get_up(xx, 0.5)
         b = self.get_low(xx, 0.5)
-        return (a+b) / 2
+        return (a + b) / 2
 
     def get_mean(self, xx):
         row = self.cum[xx]
         tot = row[-1]
         s = 0
         for yy in range(self.yy + 1):
-            d = row[yy+1] - row[yy]
+            d = row[yy + 1] - row[yy]
             s += yy * d
         return s / tot
 
@@ -234,7 +244,7 @@ class MultiCurve(Curve):
         if point.xx == 0:
             return None
         else:
-            return point.yy/point.xx * 100
+            return point.yy / point.xx * 100
 
     def get_up_pct_coll(self, coll, level):
         return self.get_up_pct(self.points[coll].xx, level)
@@ -245,12 +255,12 @@ class MultiCurve(Curve):
     def print_point(self, point, f):
         if point.xx == 0:
             return
-        frac = point.yy/point.xx
+        frac = point.yy / point.xx
         m = f"  {point.yy:4d}/{point.xx:4d} ≈ {frac*100:5.1f}% {self.metadata.dataset_labels[0]}"
 
         row = self.cum[point.xx]
         tot = row[-1]
-        as_small = row[point.yy+1] / tot
+        as_small = row[point.yy + 1] / tot
         as_large = 1 - row[point.yy] / tot
         m += f" : {as_small*100:6.2f}% as small, {as_large*100:6.2f}% as large"
 
@@ -270,11 +280,14 @@ class MultiCurve(Curve):
         print(m, file=f)
 
     def print_point_freq(self, point, f, top):
-        print(f"{self.pperiod}, {point.coll} = {self.metadata.coll_labels[point.coll]}:", file=f)
+        print(
+            f"{self.pperiod}, {point.coll} = {self.metadata.coll_labels[point.coll]}:",
+            file=f)
         print(file=f)
         for i in range(2):
             print(f"   {self.metadata.dataset_labels[i]}:", file=f)
-            l = sorted(point.tokencounts[i].most_common(), key=lambda x: (-x[1], x[0]))
+            l = sorted(point.tokencounts[i].most_common(),
+                       key=lambda x: (-x[1], x[0]))
             if top is not None:
                 l = l[:top]
             for w, c in l:
@@ -294,29 +307,41 @@ class MultiCurve(Curve):
             self.print_point_freq(point, f, top)
 
     def plot(self, dir_result):
-        fig = plt.figure(figsize=(7,5))
-        ax = fig.add_axes([0.12,0.125,0.85,0.86])
+        fig = plt.figure(figsize=(7, 5))
+        ax = fig.add_axes([0.12, 0.125, 0.85, 0.86])
         ax.set_ylim(self.metadata.yrange)
         ax.set_xlabel(self.metadata.xlabel, labelpad=15)
         ax.set_ylabel(self.metadata.ylabel, labelpad=8)
-        ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(decimals=0))
+        ax.yaxis.set_major_formatter(
+            matplotlib.ticker.PercentFormatter(decimals=0))
 
-        xxx = list(range(1, self.xx+1))
+        xxx = list(range(1, self.xx + 1))
         for f in self.metadata.shading_fraction:
-            up = [ self.get_up_pct(xx, f) for xx in xxx ]
-            low = [ self.get_low_pct(xx, f) for xx in xxx ]
-            ax.fill_between(xxx, up, low, color="#000000", alpha=0.1, linewidth=0)
+            up = [self.get_up_pct(xx, f) for xx in xxx]
+            low = [self.get_low_pct(xx, f) for xx in xxx]
+            ax.fill_between(xxx,
+                            up,
+                            low,
+                            color="#000000",
+                            alpha=0.1,
+                            linewidth=0)
 
         for coll in self.colls:
             point = self.points[coll]
             if point.xx == 0:
                 continue
-            pct = point.yy/point.xx * 100
-            ax.plot(point.xx, pct, color=self.metadata.coll_colors[coll], marker="o")
+            pct = point.yy / point.xx * 100
+            ax.plot(point.xx,
+                    pct,
+                    color=self.metadata.coll_colors[coll],
+                    marker="o")
             f = min(self.metadata.shading_fraction)
             up = self.get_up_pct(point.xx, f)
             low = self.get_low_pct(point.xx, f)
-            ax.plot([point.xx, point.xx], [up, low], color=self.metadata.coll_colors[coll], linewidth=2, ls=":")
+            ax.plot([point.xx, point.xx], [up, low],
+                    color=self.metadata.coll_colors[coll],
+                    linewidth=2,
+                    ls=":")
 
         basename = f"period-{self.period[0]}-{self.period[1]-1}"
         os.makedirs(dir_result, exist_ok=True)
@@ -367,14 +392,18 @@ class TimeSeries:
         limit_freq = 2
         minperiods = 2
 
-        col_totals = [ collections.Counter(), collections.Counter() ]
-        token_totals = [ collections.Counter(), collections.Counter() ]
-        token_counts = [ collections.Counter(), collections.Counter() ]
-        overall = [ 0, 0 ]
+        col_totals = [collections.Counter(), collections.Counter()]
+        token_totals = [collections.Counter(), collections.Counter()]
+        token_counts = [collections.Counter(), collections.Counter()]
+        overall = [0, 0]
         columns = []
         for curve in self.curvelist:
             col = curve.period
-            columns.append({ 'id': col, 'label': curve.period[0], 'label2': curve.period[1] - 1})
+            columns.append({
+                'id': col,
+                'label': curve.period[0],
+                'label2': curve.period[1] - 1
+            })
             if coll:
                 p = curve.points[coll]
             else:
@@ -400,26 +429,26 @@ class TimeSeries:
             s = col_totals_s[col]
             for t in tokens:
                 x = token_counts_s[(t, col)]
-                tot_pct[t] += x/s
-                if x/s >= limit_pct/100 and x >= limit_freq:
+                tot_pct[t] += x / s
+                if x / s >= limit_pct / 100 and x >= limit_freq:
                     relevant_tokens[t] += 1
 
-        tokens = [ t for t in tokens if relevant_tokens[t] >= minperiods ]
+        tokens = [t for t in tokens if relevant_tokens[t] >= minperiods]
         tokens.sort()
         tokens.sort(key=lambda x: tot_pct[x], reverse=True)
 
-        heights1 = [ {}, {} ]
-        heights2 = [ {}, {} ]
-        heights3 = [ {}, {} ]
+        heights1 = [{}, {}]
+        heights2 = [{}, {}]
+        heights3 = [{}, {}]
         for i in range(2):
             for curve in self.curvelist:
                 col = curve.period
                 s = col_totals_s[col]
                 for t in tokens:
                     x = token_counts[i][(t, col)]
-                    f1 = max((x-1)/s, 0)
-                    f2 = x/s
-                    f3 = (x+1)/s
+                    f1 = max((x - 1) / s, 0)
+                    f2 = x / s
+                    f3 = (x + 1) / s
                     f1 = round(f1 * scale)
                     f2 = round(f2 * scale)
                     f3 = round(f3 * scale)
@@ -465,7 +494,7 @@ class TimeSeries:
         for coll in self.colls:
             self.plot_trend_coll(dir_result, True, [coll])
         self.plot_trend_coll(dir_result, False, self.colls)
-        for highlight in [ None ] + self.metadata.periods_highlight:
+        for highlight in [None] + self.metadata.periods_highlight:
             self.plot_timeseries(dir_result, highlight)
             for coll in self.colls:
                 self.plot_timeseries_coll(dir_result, coll, highlight)
@@ -473,17 +502,19 @@ class TimeSeries:
             curve.plot(dir_result)
 
     def plot_start(self):
-        fig = plt.figure(figsize=(7,5))
-        ax = fig.add_axes([0.12,0.14,0.85,0.84])
+        fig = plt.figure(figsize=(7, 5))
+        ax = fig.add_axes([0.12, 0.14, 0.85, 0.84])
         ax.set_ylim(self.metadata.yrange)
         ax.set_xlabel(self.metadata.timeseries_xlabel, labelpad=15)
         ax.set_ylabel(self.metadata.ylabel, labelpad=8)
-        years = [ p[0] for p in self.metadata.periods ]
-        major_years = [ c.period[0] for c in self.curvelist if c.is_major ]
+        years = [p[0] for p in self.metadata.periods]
+        major_years = [c.period[0] for c in self.curvelist if c.is_major]
         ax.set_xticks(years, minor=True)
         ax.set_xticks(major_years, minor=False)
-        ax.set_xticklabels( [ c.pperiod for c in self.curvelist if c.is_major ], minor=False)
-        ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(decimals=0))
+        ax.set_xticklabels([c.pperiod for c in self.curvelist if c.is_major],
+                           minor=False)
+        ax.yaxis.set_major_formatter(
+            matplotlib.ticker.PercentFormatter(decimals=0))
         for y in major_years:
             ax.axvline(y, color="#000000", linewidth=1, alpha=0.1)
         ax.tick_params(which='major', length=6)
@@ -521,31 +552,29 @@ class TimeSeries:
         if show_full:
             col = "#000000" if only_full else "#808080"
             for i in self.metadata.trend_step:
-                pct = [ c.get_mean_pct(i) for c in self.curvelist ]
+                pct = [c.get_mean_pct(i) for c in self.curvelist]
                 ymax = max(ymax, maxN(pct))
                 ymin = min(ymin, minN(pct))
-                ax.plot(
-                    years, pct,
-                    color=lighter(col, i/xx),
-                    linewidth=2 if only_full else 1,
-                    markersize=6 if only_full else 2,
-                    marker="o"
-                )
+                ax.plot(years,
+                        pct,
+                        color=lighter(col, i / xx),
+                        linewidth=2 if only_full else 1,
+                        markersize=6 if only_full else 2,
+                        marker="o")
 
         for coll in colls:
             col = self.metadata.coll_colors[coll]
             for i in self.metadata.trend_step:
-                pct = [ c.points[coll].get_mean_pct(i) for c in self.curvelist ]
+                pct = [c.points[coll].get_mean_pct(i) for c in self.curvelist]
                 ymax = max(ymax, maxN(pct))
                 ymin = min(ymin, minN(pct))
-                w = 1 - i/xx
-                ax.plot(
-                    years, pct,
-                    color=lighter(col, i/xx),
-                    linewidth=2,
-                    markersize=6,
-                    marker="o"
-                )
+                w = 1 - i / xx
+                ax.plot(years,
+                        pct,
+                        color=lighter(col, i / xx),
+                        linewidth=2,
+                        markersize=6,
+                        marker="o")
 
         if ymin < 0.4 * ymax:
             ymin = 0
@@ -566,11 +595,19 @@ class TimeSeries:
 
         if highlight:
             c = self.curves[highlight]
-            ax.axvline(c.period[0], color="#000000", linewidth=2, ls=":", alpha=0.5)
+            ax.axvline(c.period[0],
+                       color="#000000",
+                       linewidth=2,
+                       ls=":",
+                       alpha=0.5)
 
         for coll in self.colls:
-            pct = [ c.get_pct(coll) for c in self.curvelist ]
-            ax.plot(years, pct, color=self.metadata.coll_colors[coll], linewidth=2, marker="o")
+            pct = [c.get_pct(coll) for c in self.curvelist]
+            ax.plot(years,
+                    pct,
+                    color=self.metadata.coll_colors[coll],
+                    linewidth=2,
+                    marker="o")
 
         basename = f"timeseries"
         if highlight:
@@ -581,25 +618,36 @@ class TimeSeries:
     def plot_timeseries_coll(self, dir_result, coll, highlight):
         fig, ax, years = self.plot_start()
 
-        pct = [ c.get_pct(coll) for c in self.curvelist ]
+        pct = [c.get_pct(coll) for c in self.curvelist]
         for f in self.metadata.shading_fraction:
-            up = [ c.get_up_pct_coll(coll, f) for c in self.curvelist ]
-            low = [ c.get_low_pct_coll(coll, f) for c in self.curvelist ]
-            ax.fill_between(years, up, low, color=self.metadata.coll_colors[coll], alpha=0.15, linewidth=0)
-        ax.plot(years, pct, color=self.metadata.coll_colors[coll], linewidth=2, marker="o")
+            up = [c.get_up_pct_coll(coll, f) for c in self.curvelist]
+            low = [c.get_low_pct_coll(coll, f) for c in self.curvelist]
+            ax.fill_between(years,
+                            up,
+                            low,
+                            color=self.metadata.coll_colors[coll],
+                            alpha=0.15,
+                            linewidth=0)
+        ax.plot(years,
+                pct,
+                color=self.metadata.coll_colors[coll],
+                linewidth=2,
+                marker="o")
 
         if highlight:
             c = self.curves[highlight]
             f = min(self.metadata.shading_fraction)
             up = c.get_up_pct_coll(coll, f)
             low = c.get_low_pct_coll(coll, f)
-            ax.plot([c.period[0], c.period[0]], [up, low], color=self.metadata.coll_colors[coll], linewidth=2, ls=":")
+            ax.plot([c.period[0], c.period[0]], [up, low],
+                    color=self.metadata.coll_colors[coll],
+                    linewidth=2,
+                    ls=":")
 
         basename = f"timeseries-{coll}"
         if highlight:
             basename += f"-{highlight[0]}-{highlight[1]-1}"
         self.plot_finish(fig, dir_result, basename)
-
 
 
 class Driver:
@@ -667,11 +715,10 @@ class Driver:
                 q = infty
             else:
                 q = int(suffix[1:])
-            by_digest[digest].append((q,fn))
+            by_digest[digest].append((q, fn))
         self.best = {}
         for digest in by_digest.keys():
             l = sorted(by_digest[digest], reverse=True)
             self.best[digest] = l[0][1]
-            for q,fn in l[1:]:
+            for q, fn in l[1:]:
                 os.unlink(os.path.join(DIR_OUT, fn))
-
