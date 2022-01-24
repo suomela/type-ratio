@@ -15,7 +15,7 @@ Building
 Usage
 -----
 
-Please see https://github.com/suomela/suffix-competition-code for an example how to use this code.
+Please see https://github.com/suomela/suffix-competition-code for an example of how to use this code.
 
 
 Author
