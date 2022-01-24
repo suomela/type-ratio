@@ -25,11 +25,7 @@ If you use Ubuntu 20.04, installing the following packages should be enough:
 
     apt-get install -y cmake g++ git python3 python3-jinja2 python3-matplotlib
 
-You can find a suitable Docker image with all the right packages installed here:
-
-    https://hub.docker.com/r/suomela/type-ratio
-
-There is also a [Dockerfile](docker/Dockerfile) you can use to create your own Docker image.
+You can use the Docker image [suomela/type-ratio](https://hub.docker.com/r/suomela/type-ratio), which is an Ubuntu image with all the right packages installed. There is also a [Dockerfile](docker/Dockerfile) you can use to create your own Docker image.
 
 
 Author
