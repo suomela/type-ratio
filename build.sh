@@ -2,7 +2,7 @@
 
 set -e
 
-mkdir -p release
-cd release
+mkdir -p build
+cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
