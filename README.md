@@ -29,7 +29,7 @@ You can find a suitable Docker image with all the right packages installed here:
 
     https://hub.docker.com/r/suomela/type-ratio
 
-There is also a [Dockerfile](docker/Dockerfile] you can use to create your own Docker image.
+There is also a [Dockerfile](docker/Dockerfile) you can use to create your own Docker image.
 
 
 Author
