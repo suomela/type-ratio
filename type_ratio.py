@@ -22,6 +22,7 @@ DIR = "type-ratio-data"
 DIR_IN = os.path.join(DIR, "in")
 DIR_OUT = os.path.join(DIR, "out")
 DIR_RESULT = "type-ratio-result"
+CODE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def _numrow(l):
@@ -480,9 +481,8 @@ class TimeSeries:
         if coll:
             basename += '-' + coll
         filename = os.path.join(dir_result, f"{basename}.html")
-        prog_dir = os.path.dirname(os.path.abspath(__file__))
         jenv = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(prog_dir),
+            loader=jinja2.FileSystemLoader(CODE_DIR),
             autoescape=True,
         )
         jtempl = jenv.get_template('templates/tokens.html')
@@ -667,7 +667,7 @@ class Driver:
         print()
         for curve in self.curves:
             curve.calc_write_input_all()
-        args = ["build/type-ratio", str(iter)]
+        args = [os.path.join(CODE_DIR, "build/type-ratio"), str(iter)]
         print(" ".join(args))
         subprocess.run(args, check=True)
         print()
