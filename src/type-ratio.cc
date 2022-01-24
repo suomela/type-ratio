@@ -6,8 +6,8 @@
 #include <random>
 #include <string>
 #include <system_error>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 namespace type_ratio {
 
@@ -26,15 +26,13 @@ const fs::path data_dir = "type-ratio-data";
 const fs::path dir_in = fs::path(data_dir) / "in";
 const fs::path dir_out = fs::path(data_dir) / "out";
 
-constexpr int hexcount = 256/4;
-const char* hexdigits = "0123456789abcdef";
-
+constexpr int hexcount = 256 / 4;
+const char *hexdigits = "0123456789abcdef";
 
 class Work {
-public:
+  public:
     explicit Work(string fn_, ll iter_)
-        : fn{fn_}, iter{iter_}
-    {}
+        : fn{fn_}, iter{iter_} {}
 
     void run() {
         read_data();
@@ -56,7 +54,7 @@ public:
                 read_into(f, data[i], m0, 0);
                 read_into(f, data[i], m1, m0);
             }
-        } catch (const std::ios_base::failure& e) {
+        } catch (const std::ios_base::failure &e) {
             throw std::ios_base::failure(input, e.code());
         }
     }
@@ -70,15 +68,15 @@ public:
         try {
             ofstream f(output);
             f.exceptions(ofstream::failbit | ofstream::badbit);
-            for (int x = 0; x < mm+1; ++x) {
-                pair<int,int> r = acc_range(x);
+            for (int x = 0; x < mm + 1; ++x) {
+                pair<int, int> r = acc_range(x);
                 f << r.first << " " << r.second;
                 for (int y = r.first; y < r.second; ++y) {
                     f << " " << get_acc(x, y);
                 }
                 f << "\n";
             }
-        } catch (const std::ios_base::failure& e) {
+        } catch (const std::ios_base::failure &e) {
             throw std::ios_base::failure(output, e.code());
         }
     }
@@ -93,7 +91,7 @@ public:
         }
     }
 
-private:
+  private:
     void msg(string m) {
         #pragma omp critical
         {
@@ -101,7 +99,7 @@ private:
         }
     }
 
-    static void read_into(ifstream& f, vector<int>& v, int range, int base) {
+    static void read_into(ifstream &f, vector<int> &v, int range, int base) {
         while (true) {
             int a;
             f >> a;
@@ -115,13 +113,13 @@ private:
 
     void init_calc() {
         order.resize(n);
-        accum.resize((m0+1) * (mm+1));
+        accum.resize((m0 + 1) * (mm + 1));
         seen.resize(mm);
         for (int j = 0; j < n; ++j) {
             order[j] = j;
         }
-        for (int x = 0; x < mm+1; ++x) {
-            for (int y = 0; y < m0+1; ++y) {
+        for (int x = 0; x < mm + 1; ++x) {
+            for (int y = 0; y < m0 + 1; ++y) {
                 clear_acc(x, y);
             }
         }
@@ -160,7 +158,7 @@ private:
         int x = 0;
         int y = 0;
         for (int j = 0; j < n; ++j) {
-            const vector<int>& vec = data[order[j]];
+            const vector<int> &vec = data[order[j]];
             for (int v : vec) {
                 if (!seen[v]) {
                     seen[v] = 1;
@@ -175,16 +173,16 @@ private:
     }
 
     inline ll get_acc(int x, int y) const {
-        return accum[x*(m0+1) + y];
+        return accum[x * (m0 + 1) + y];
     }
 
-    inline pair<int,int> acc_range(int x) const {
+    inline pair<int, int> acc_range(int x) const {
         int first = 0;
-        while (first < m0+1 && get_acc(x, first) == 0) {
+        while (first < m0 + 1 && get_acc(x, first) == 0) {
             ++first;
         }
-        int last = m0+1;
-        while (last > first && get_acc(x, last-1) == 0) {
+        int last = m0 + 1;
+        while (last > first && get_acc(x, last - 1) == 0) {
             --last;
         }
         if (first == last) {
@@ -194,11 +192,11 @@ private:
     }
 
     inline void inc_acc(int x, int y) {
-        ++accum[x*(m0+1) + y];
+        ++accum[x * (m0 + 1) + y];
     }
 
     inline void clear_acc(int x, int y) {
-        accum[x*(m0+1) + y] = 0;
+        accum[x * (m0 + 1) + y] = 0;
     }
 
     const string fn;
@@ -216,7 +214,7 @@ private:
 };
 
 class Driver {
-public:
+  public:
     explicit Driver(ll iter_) : iter{iter_} {}
 
     void run() {
@@ -226,14 +224,14 @@ public:
 
     void get_work() {
         std::unordered_set<string> work_set;
-        for (const auto& p : fs::directory_iterator(dir_in)) {
+        for (const auto &p : fs::directory_iterator(dir_in)) {
             string fn = p.path().filename();
             assert(fn.size() == hexcount);
             assert(fn.find_first_not_of(hexdigits) == string::npos);
             work_set.insert(fn);
         }
         fs::create_directories(dir_out);
-        for (const auto& p : fs::directory_iterator(dir_out)) {
+        for (const auto &p : fs::directory_iterator(dir_out)) {
             string fn2 = p.path().filename();
             assert(fn2.size() >= hexcount);
             string fn = fn2.substr(0, hexcount);
@@ -251,7 +249,7 @@ public:
         vector<string> todo(begin(work_set), end(work_set));
         std::sort(begin(todo), end(todo));
         work.reserve(todo.size());
-        for (const auto& s : todo) {
+        for (const auto &s : todo) {
             work.emplace_back(s, iter);
         }
     }
@@ -264,14 +262,14 @@ public:
         }
     }
 
-private:
+  private:
     const ll iter;
     vector<Work> work;
 };
 
-}
+} // namespace type_ratio
 
-int main(int argc, const char** argv) {
+int main(int argc, const char **argv) {
     if (argc <= 1) {
         std::cerr << "usage: " << argv[0] << " ITER" << std::endl;
         std::exit(1);
@@ -280,7 +278,7 @@ int main(int argc, const char** argv) {
     long long iter;
     try {
         iter = std::stoll(argv[1]);
-    } catch(const std::logic_error& e) {
+    } catch (const std::logic_error &e) {
         std::cerr << "invalid argument" << std::endl;
         std::exit(1);
     }
@@ -288,7 +286,7 @@ int main(int argc, const char** argv) {
     try {
         type_ratio::Driver d(iter);
         d.run();
-    } catch(const std::system_error& e) {
+    } catch (const std::system_error &e) {
         std::cerr << e.what() << std::endl;
         std::exit(1);
     }
