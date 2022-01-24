@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.10)
+project(type-ratio LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+find_package(OpenMP REQUIRED)
+add_executable(type-ratio src/type-ratio.cc)
+target_link_libraries(type-ratio PUBLIC OpenMP::OpenMP_CXX)

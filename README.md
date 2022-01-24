@@ -1,2 +1,7 @@
-# type-ratio
 TypeRatio: comparing competing suffixes
+=======================================
+
+Building
+--------
+
+    ./build.sh
