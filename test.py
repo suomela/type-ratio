@@ -283,6 +283,6 @@ def main():
         t.add(gen_random(10, 10, n))
         t.add(gen_random(100, 100, n))
     t.run_approx([1000, 2000])
-
+    print('All tests passed.')
 
 main()

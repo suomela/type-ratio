@@ -12,6 +12,14 @@ Building
     ./build.sh
 
 
+Testing
+-------
+
+This should run a number of tests and eventually output "All tests passed":
+
+    ./test.py
+
+
 Usage
 -----
 
