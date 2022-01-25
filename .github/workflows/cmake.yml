@@ -1,4 +1,4 @@
-name: Build
+name: Build and test
 
 on:
   push:
@@ -13,3 +13,5 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build
       run: ./build.sh
+    - name: Test
+      run: ./test.py
