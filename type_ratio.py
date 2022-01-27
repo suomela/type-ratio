@@ -430,9 +430,10 @@ class TimeSeries:
             s = col_totals_s[col]
             for t in tokens:
                 x = token_counts_s[(t, col)]
-                tot_pct[t] += x / s
-                if x / s >= limit_pct / 100 and x >= limit_freq:
-                    relevant_tokens[t] += 1
+                if x:
+                    tot_pct[t] += x / s
+                    if x / s >= limit_pct / 100 and x >= limit_freq:
+                        relevant_tokens[t] += 1
 
         tokens = [t for t in tokens if relevant_tokens[t] >= minperiods]
         tokens.sort()
