@@ -216,6 +216,7 @@ class Tests:
                 test.verify_approx(0.25)
         print()
         self.tests = []
+        self.setup()
 
     def setup(self):
         for d in [DIR_IN, DIR_OUT]:
