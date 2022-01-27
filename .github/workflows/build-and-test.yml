@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Update packages
+      run: sudo apt-get update -y
+    - name: Install packages
+      run: sudo apt-get install -y python3-jinja2 python3-matplotlib
     - name: Build
       run: ./build.sh
     - name: Test
