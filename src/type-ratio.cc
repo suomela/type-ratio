@@ -95,7 +95,7 @@ class Work {
     void msg(string m) {
         #pragma omp critical
         {
-            std::cout << m << " " << fn << "  " << n << " " << m0 << "+" << m1 << "\n";
+            std::cout << m << " " << fn << "  " << n << " " << m0 << "+" << m1 << std::endl;
         }
     }
 
