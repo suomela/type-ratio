@@ -64,6 +64,12 @@ def lighter(col, w):
     return mcol.hsv_to_rgb([h, s, v])
 
 
+class MyPercentFormatter(matplotlib.ticker.ScalarFormatter):
+    def __call__(self, x, pos=None):
+        f = super().__call__(x, pos)
+        return f + '%'
+
+
 class Metadata:
     pass
 
@@ -504,7 +510,7 @@ class TimeSeries:
 
     def plot_start(self):
         fig = plt.figure(figsize=(7, 5))
-        ax = fig.add_axes([0.12, 0.14, 0.85, 0.84])
+        ax = fig.add_axes([0.13, 0.14, 0.84, 0.84])
         ax.set_ylim(self.metadata.yrange)
         ax.set_xlabel(self.metadata.timeseries_xlabel, labelpad=15)
         ax.set_ylabel(self.metadata.ylabel, labelpad=8)
@@ -514,8 +520,7 @@ class TimeSeries:
         ax.set_xticks(major_years, minor=False)
         ax.set_xticklabels([c.pperiod for c in self.curvelist if c.is_major],
                            minor=False)
-        ax.yaxis.set_major_formatter(
-            matplotlib.ticker.PercentFormatter(decimals=0))
+        ax.yaxis.set_major_formatter(MyPercentFormatter())
         for y in major_years:
             ax.axvline(y, color="#000000", linewidth=1, alpha=0.1)
         ax.tick_params(which='major', length=6)
