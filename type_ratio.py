@@ -65,6 +65,7 @@ def lighter(col, w):
 
 
 class MyPercentFormatter(matplotlib.ticker.ScalarFormatter):
+
     def __call__(self, x, pos=None):
         f = super().__call__(x, pos)
         return f + '%'
@@ -75,6 +76,7 @@ class Metadata:
 
 
 class Sample:
+
     def __init__(self, label, periods, colls):
         self.label = label
         self.periods = set(periods)
@@ -88,6 +90,7 @@ class Sample:
 
 
 class Point:
+
     def __init__(self, samplelist):
         self.samplelist = samplelist
         self.tokens = [set(), set()]
@@ -105,6 +108,7 @@ class Point:
 
 
 class Curve(Point):
+
     def __init__(self, metadata, period, samplelist):
         super().__init__(samplelist)
         self.metadata = metadata
@@ -221,6 +225,7 @@ class Curve(Point):
 
 
 class MultiCurve(Curve):
+
     def __init__(self, metadata, period, colls, samplelist):
         super().__init__(metadata, period, samplelist)
         self.colls = colls
@@ -364,6 +369,7 @@ class MultiCurve(Curve):
 
 
 class TimeSeries:
+
     def __init__(self, metadata, colls, samplelist):
         self.metadata = metadata
         self.colls = colls
@@ -657,6 +663,7 @@ class TimeSeries:
 
 
 class Driver:
+
     def __init__(self, label):
         self.timeseries = []
         self.curves = []

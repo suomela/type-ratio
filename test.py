@@ -26,6 +26,7 @@ def pretty_out(x):
 
 
 class Test:
+
     def __init__(self, data):
         self.data = data
         self.symmap = [None, None]
@@ -157,6 +158,7 @@ class Test:
 
 
 class Tests:
+
     def __init__(self, verbose=False):
         self.tests = []
         self.verbose = verbose
@@ -285,5 +287,6 @@ def main():
         t.add(gen_random(100, 100, n))
     t.run_approx([1000, 2000])
     print('All tests passed.')
+
 
 main()

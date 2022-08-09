@@ -31,8 +31,7 @@ const char *hexdigits = "0123456789abcdef";
 
 class Work {
   public:
-    explicit Work(string fn_, ll iter_)
-        : fn{fn_}, iter{iter_} {}
+    explicit Work(string fn_, ll iter_) : fn{fn_}, iter{iter_} {}
 
     void run() {
         read_data();
@@ -93,9 +92,10 @@ class Work {
 
   private:
     void msg(string m) {
-        #pragma omp critical
+#pragma omp critical
         {
-            std::cout << m << " " << fn << "  " << n << " " << m0 << "+" << m1 << std::endl;
+            std::cout << m << " " << fn << "  " << n << " " << m0 << "+" << m1
+                      << std::endl;
         }
     }
 
@@ -172,9 +172,7 @@ class Work {
         }
     }
 
-    inline ll get_acc(int x, int y) const {
-        return accum[x * (m0 + 1) + y];
-    }
+    inline ll get_acc(int x, int y) const { return accum[x * (m0 + 1) + y]; }
 
     inline pair<int, int> acc_range(int x) const {
         int first = 0;
@@ -191,13 +189,9 @@ class Work {
         return std::make_pair(first, last);
     }
 
-    inline void inc_acc(int x, int y) {
-        ++accum[x * (m0 + 1) + y];
-    }
+    inline void inc_acc(int x, int y) { ++accum[x * (m0 + 1) + y]; }
 
-    inline void clear_acc(int x, int y) {
-        accum[x * (m0 + 1) + y] = 0;
-    }
+    inline void clear_acc(int x, int y) { accum[x * (m0 + 1) + y] = 0; }
 
     const string fn;
     const ll iter;
@@ -256,7 +250,7 @@ class Driver {
 
     void do_work() {
         int n = work.size();
-        #pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic)
         for (int i = 0; i < n; ++i) {
             work[i].run();
         }
