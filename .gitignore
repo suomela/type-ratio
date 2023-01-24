@@ -1,4 +1,5 @@
 /build/
 /type-ratio-data/
 /type-ratio-result-*/
+/test-custom-directory/
 /.vscode/

@@ -76,8 +76,8 @@ def get_test_data2(pp):
     return samplelist
 
 
-def run(name, samplelist):
-    driver = type_ratio.Driver(name)
+def run(name, samplelist, dir_result=None):
+    driver = type_ratio.Driver(name, dir_result=dir_result)
     colls = type_ratio.list_colls(samplelist)
     ts = type_ratio.TimeSeries(get_metadata(), colls, samplelist)
     driver.add_timeseries(ts)
@@ -86,6 +86,7 @@ def run(name, samplelist):
 
 def main():
     run('test1', get_test_data1())
+    run('test1', get_test_data1(), dir_result='test-custom-directory')
     run(
         'test2a',
         get_test_data2({

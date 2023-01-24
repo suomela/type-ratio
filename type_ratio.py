@@ -664,11 +664,14 @@ class TimeSeries:
 
 class Driver:
 
-    def __init__(self, label):
+    def __init__(self, label=None, dir_result=None):
         self.timeseries = []
         self.curves = []
-        self.label = label
-        self.dir_result = DIR_RESULT + "-" + label
+        if dir_result is not None:
+            self.dir_result = dir_result
+        else:
+            assert label is not None
+            self.dir_result = DIR_RESULT + "-" + label
 
     def add_timeseries(self, ts):
         self.timeseries.append(ts)
