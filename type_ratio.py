@@ -4,16 +4,13 @@ import os
 import os.path
 import re
 import subprocess
-import statistics
 import sys
 import jinja2
-import markupsafe
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 import matplotlib.colors as mcol
 
 infty = float("inf")
@@ -436,7 +433,6 @@ class TimeSeries:
         col_totals_s = col_totals[0] + col_totals[1]
         token_totals_s = token_totals[0] + token_totals[1]
         token_counts_s = token_counts[0] + token_counts[1]
-        overall_s = sum(overall)
 
         tokens = list(token_totals_s.keys())
         relevant_tokens = collections.Counter()
