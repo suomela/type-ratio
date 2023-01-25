@@ -350,12 +350,14 @@ class MultiCurve(Curve):
                     color=self.metadata.coll_colors[coll],
                     linewidth=2,
                     ls=":")
-            is_open = coll in self.metadata.__dict__.get('coll_marker_open', set())
+            is_open = coll in self.metadata.__dict__.get(
+                'coll_marker_open', set())
             ax.plot(point.xx,
                     pct,
                     color=self.metadata.coll_colors[coll],
                     markeredgecolor=self.metadata.coll_colors[coll],
-                    markerfacecolor="#ffffff" if is_open else self.metadata.coll_colors[coll],
+                    markerfacecolor="#ffffff"
+                    if is_open else self.metadata.coll_colors[coll],
                     marker="o")
 
         basename = f"period-{self.period[0]}-{self.period[1]-1}"
@@ -584,12 +586,14 @@ class TimeSeries:
                 ymax = max(ymax, maxN(pct))
                 ymin = min(ymin, minN(pct))
                 w = 1 - i / xx
-                is_open = coll in self.metadata.__dict__.get('coll_marker_open', set())
+                is_open = coll in self.metadata.__dict__.get(
+                    'coll_marker_open', set())
                 ax.plot(years,
                         pct,
                         color=lighter(col, i / xx),
                         markeredgecolor=lighter(col, i / xx),
-                        markerfacecolor="#ffffff" if is_open else lighter(col, i / xx),
+                        markerfacecolor="#ffffff" if is_open else lighter(
+                            col, i / xx),
                         linewidth=2,
                         markersize=6,
                         marker="o")
@@ -621,12 +625,14 @@ class TimeSeries:
 
         for coll in self.colls:
             pct = [c.get_pct(coll) for c in self.curvelist]
-            is_open = coll in self.metadata.__dict__.get('coll_marker_open', set())
+            is_open = coll in self.metadata.__dict__.get(
+                'coll_marker_open', set())
             ax.plot(years,
                     pct,
                     color=self.metadata.coll_colors[coll],
                     markeredgecolor=self.metadata.coll_colors[coll],
-                    markerfacecolor="#ffffff" if is_open else self.metadata.coll_colors[coll],
+                    markerfacecolor="#ffffff"
+                    if is_open else self.metadata.coll_colors[coll],
                     linewidth=2,
                     marker="o")
 
@@ -663,7 +669,8 @@ class TimeSeries:
                 pct,
                 color=self.metadata.coll_colors[coll],
                 markeredgecolor=self.metadata.coll_colors[coll],
-                markerfacecolor="#ffffff" if is_open else self.metadata.coll_colors[coll],
+                markerfacecolor="#ffffff"
+                if is_open else self.metadata.coll_colors[coll],
                 linewidth=2,
                 marker="o")
         basename = f"timeseries-{coll}"
