@@ -343,10 +343,6 @@ class MultiCurve(Curve):
             if point.xx == 0:
                 continue
             pct = point.yy / point.xx * 100
-            ax.plot(point.xx,
-                    pct,
-                    color=self.metadata.coll_colors[coll],
-                    marker="o")
             f = min(self.metadata.shading_fraction)
             up = self.get_up_pct(point.xx, f)
             low = self.get_low_pct(point.xx, f)
@@ -354,6 +350,13 @@ class MultiCurve(Curve):
                     color=self.metadata.coll_colors[coll],
                     linewidth=2,
                     ls=":")
+            is_open = coll in self.metadata.__dict__.get('coll_marker_open', set())
+            ax.plot(point.xx,
+                    pct,
+                    color=self.metadata.coll_colors[coll],
+                    markeredgecolor=self.metadata.coll_colors[coll],
+                    markerfacecolor="#ffffff" if is_open else self.metadata.coll_colors[coll],
+                    marker="o")
 
         basename = f"period-{self.period[0]}-{self.period[1]-1}"
         os.makedirs(dir_result, exist_ok=True)
@@ -581,9 +584,12 @@ class TimeSeries:
                 ymax = max(ymax, maxN(pct))
                 ymin = min(ymin, minN(pct))
                 w = 1 - i / xx
+                is_open = coll in self.metadata.__dict__.get('coll_marker_open', set())
                 ax.plot(years,
                         pct,
                         color=lighter(col, i / xx),
+                        markeredgecolor=lighter(col, i / xx),
+                        markerfacecolor="#ffffff" if is_open else lighter(col, i / xx),
                         linewidth=2,
                         markersize=6,
                         marker="o")
@@ -615,9 +621,12 @@ class TimeSeries:
 
         for coll in self.colls:
             pct = [c.get_pct(coll) for c in self.curvelist]
+            is_open = coll in self.metadata.__dict__.get('coll_marker_open', set())
             ax.plot(years,
                     pct,
                     color=self.metadata.coll_colors[coll],
+                    markeredgecolor=self.metadata.coll_colors[coll],
+                    markerfacecolor="#ffffff" if is_open else self.metadata.coll_colors[coll],
                     linewidth=2,
                     marker="o")
 
@@ -640,12 +649,6 @@ class TimeSeries:
                             color=self.metadata.coll_colors[coll],
                             alpha=0.15,
                             linewidth=0)
-        ax.plot(years,
-                pct,
-                color=self.metadata.coll_colors[coll],
-                linewidth=2,
-                marker="o")
-
         if highlight:
             c = self.curves[highlight]
             f = min(self.metadata.shading_fraction)
@@ -655,7 +658,14 @@ class TimeSeries:
                     color=self.metadata.coll_colors[coll],
                     linewidth=2,
                     ls=":")
-
+        is_open = coll in self.metadata.__dict__.get('coll_marker_open', set())
+        ax.plot(years,
+                pct,
+                color=self.metadata.coll_colors[coll],
+                markeredgecolor=self.metadata.coll_colors[coll],
+                markerfacecolor="#ffffff" if is_open else self.metadata.coll_colors[coll],
+                linewidth=2,
+                marker="o")
         basename = f"timeseries-{coll}"
         if highlight:
             basename += f"-{highlight[0]}-{highlight[1]-1}"

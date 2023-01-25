@@ -16,6 +16,7 @@ def get_metadata():
     metadata.timeseries_xlabel = 'Time period'
     metadata.coll_labels = {'X': 'Collection X', 'Y': 'Collection Y'}
     metadata.coll_colors = {'X': '#f26924', 'Y': '#0088cc'}
+    # metadata.coll_marker_open = {'Y'}
     metadata.periods = [p1, p2, p3, p4]
     metadata.periods_highlight = [p2]
     metadata.tick_hook = lambda x: x[0] % 100 == 0
