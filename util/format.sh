@@ -2,5 +2,5 @@
 
 set -e
 
-yapf -ip *.py
+pipenv run yapf -ip *.py
 clang-format -i --style=file src/*.cc
