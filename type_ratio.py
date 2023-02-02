@@ -9,21 +9,21 @@ import jinja2
 
 import matplotlib
 
-matplotlib.use("Agg")
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcol
 
-infty = float("inf")
+infty = float('inf')
 
-DIR = "type-ratio-data"
-DIR_IN = os.path.join(DIR, "in")
-DIR_OUT = os.path.join(DIR, "out")
-DIR_RESULT = "type-ratio-result"
+DIR = 'type-ratio-data'
+DIR_IN = os.path.join(DIR, 'in')
+DIR_OUT = os.path.join(DIR, 'out')
+DIR_RESULT = 'type-ratio-result'
 CODE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def _numrow(l):
-    return " ".join([str(x) for x in l]) + "\n"
+    return ' '.join([str(x) for x in l]) + '\n'
 
 
 def list_periods(samplelist):
@@ -50,7 +50,7 @@ def filter_coll(samplelist, coll):
 
 def pretty_period(period):
     a, b = period
-    return f"{a}–{b-1}"
+    return f'{a}–{b-1}'
 
 
 def lighter(col, w):
@@ -69,7 +69,19 @@ class MyPercentFormatter(matplotlib.ticker.ScalarFormatter):
 
 
 class Metadata:
-    pass
+
+    def get_plot_attr(self, coll, light=None):
+        is_open = coll in self.__dict__.get('coll_marker_open', set())
+        color = self.coll_colors[coll]
+        if light is not None:
+            color = lighter(color, light)
+        fcolor = '#ffffff' if is_open else color
+        return {
+            'color': color,
+            'markeredgecolor': color,
+            'markerfacecolor': fcolor,
+            'marker': 'o',
+        }
 
 
 class Sample:
@@ -110,8 +122,9 @@ class Curve(Point):
         super().__init__(samplelist)
         self.metadata = metadata
         self.period = period
-        self.pperiod = pretty_period(period)
-        self.is_major = metadata.tick_hook(period)
+        if period is not None:
+            self.pperiod = pretty_period(period)
+            self.is_major = metadata.tick_hook(period)
 
     def calc_write_input(self):
         self.sorted_tokens = [sorted(tt) for tt in self.tokens]
@@ -127,16 +140,16 @@ class Curve(Point):
                 row.append(part)
             data.append(row)
         data.sort()
-        sdata = ""
+        sdata = ''
         sdata += _numrow([len(data)] + self.dim)
         for row in data:
             sdata += _numrow(row[0] + [-1] + row[1] + [-1])
-        sdata = bytes(sdata, encoding="ascii")
+        sdata = bytes(sdata, encoding='ascii')
         self.digest = hashlib.sha256(sdata).hexdigest()
         os.makedirs(DIR_IN, exist_ok=True)
         filename = os.path.join(DIR_IN, self.digest)
         print(filename)
-        with open(filename, "wb") as f:
+        with open(filename, 'wb') as f:
             f.write(sdata)
 
     def calc_read_output(self, best):
@@ -223,8 +236,9 @@ class Curve(Point):
 
 class MultiCurve(Curve):
 
-    def __init__(self, metadata, period, colls, samplelist):
+    def __init__(self, metadata, period, colls, samplelist, overall=None):
         super().__init__(metadata, period, samplelist)
+        self.overall = overall
         self.colls = colls
         self.points = {}
         self.pointlist = []
@@ -249,7 +263,7 @@ class MultiCurve(Curve):
         return min([p.xx for p in self.pointlist])
 
     def get_pct(self, coll):
-        point = self.points[coll]
+        point = self.points[coll] if coll is not None else self
         if point.xx == 0:
             return None
         else:
@@ -261,54 +275,88 @@ class MultiCurve(Curve):
     def get_low_pct_coll(self, coll, level):
         return self.get_low_pct(self.points[coll].xx, level)
 
-    def print_point(self, point, f):
+    def get_up_pct_overall(self, level):
+        return self.overall.get_up_pct(self.xx, level)
+
+    def get_low_pct_overall(self, level):
+        return self.overall.get_low_pct(self.xx, level)
+
+    def get_up_pct_overall_coll(self, coll, level):
+        return self.overall.points[coll].get_up_pct(self.points[coll].xx,
+                                                    level)
+
+    def get_low_pct_overall_coll(self, coll, level):
+        return self.overall.points[coll].get_low_pct(self.points[coll].xx,
+                                                     level)
+
+    def print_comparison(self, point, overall, f):
         if point.xx == 0:
             return
         frac = point.yy / point.xx
-        m = f"  {point.yy:4d}/{point.xx:4d} ≈ {frac*100:5.1f}% {self.metadata.dataset_labels[0]}"
+        m = f'  {point.yy:4d}/{point.xx:4d} ≈ {frac*100:5.1f}% {self.metadata.dataset_labels[0]}'
 
-        row = self.cum[point.xx]
+        row = overall.cum[point.xx]
         tot = row[-1]
         as_small = row[point.yy + 1] / tot
         as_large = 1 - row[point.yy] / tot
-        m += f" : {as_small*100:6.2f}% as small, {as_large*100:6.2f}% as large"
+        m += f' : {as_small*100:6.2f}% as small, {as_large*100:6.2f}% as large'
 
-        marks = ""
+        marks = ''
         x = as_small
         while x <= .1 and len(marks) < 5:
-            marks += "-"
+            marks += '-'
             x *= 10
         x = as_large
         while x <= .1 and len(marks) < 5:
-            marks += "+"
+            marks += '+'
             x *= 10
-        m += f"   {marks:5}"
+        m += f'   {marks:5}'
 
-        m += f"  {point.coll} = {self.metadata.coll_labels[point.coll]}"
+        if 'coll' in point.__dict__:
+            m += f'  {point.coll} = {self.metadata.coll_labels[point.coll]}'
+        else:
+            m += f'  all collections'
 
         print(m, file=f)
 
     def print_point_freq(self, point, f, top):
         print(
-            f"{self.pperiod}, {point.coll} = {self.metadata.coll_labels[point.coll]}:",
+            f'{self.pperiod}, {point.coll} = {self.metadata.coll_labels[point.coll]}:',
             file=f)
         print(file=f)
         for i in range(2):
-            print(f"   {self.metadata.dataset_labels[i]}:", file=f)
+            print(f'   {self.metadata.dataset_labels[i]}:', file=f)
             l = sorted(point.tokencounts[i].most_common(),
                        key=lambda x: (-x[1], x[0]))
             if top is not None:
                 l = l[:top]
             for w, c in l:
                 sc = point.samplecounts[i][w]
-                print(f"    {c:8d} tokens {sc:4d} samples:  {w}", file=f)
+                print(f'    {c:8d} tokens {sc:4d} samples:  {w}', file=f)
         print(file=f)
 
     def print_summary(self, f):
-        print(f" {self.pperiod}:", file=f)
+        print(f' {self.pperiod}:', file=f)
+        print(file=f)
+        print(f'  in comparison with all collections in this period:', file=f)
         print(file=f)
         for point in self.pointlist:
-            self.print_point(point, f)
+            self.print_comparison(point, self, f)
+        print(file=f)
+        print(f'  in comparison with the same collection in all periods:',
+              file=f)
+        print(file=f)
+        for point in self.pointlist:
+            self.print_comparison(point, self.overall.points[point.coll], f)
+        self.print_comparison(self, self.overall, f)
+        print(file=f)
+
+    def print_overall(self, f):
+        assert self.period is None
+        print(f' All periods:', file=f)
+        print(file=f)
+        for point in self.pointlist:
+            self.print_comparison(point, self, f)
         print(file=f)
 
     def print_freq(self, f, top):
@@ -331,7 +379,7 @@ class MultiCurve(Curve):
             ax.fill_between(xxx,
                             up,
                             low,
-                            color="#000000",
+                            color='#000000',
                             alpha=0.1,
                             linewidth=0)
 
@@ -346,25 +394,22 @@ class MultiCurve(Curve):
             ax.plot([point.xx, point.xx], [up, low],
                     color=self.metadata.coll_colors[coll],
                     linewidth=2,
-                    ls=":")
+                    ls=':')
             is_open = coll in self.metadata.__dict__.get(
                 'coll_marker_open', set())
-            ax.plot(point.xx,
-                    pct,
-                    color=self.metadata.coll_colors[coll],
-                    markeredgecolor=self.metadata.coll_colors[coll],
-                    markerfacecolor="#ffffff"
-                    if is_open else self.metadata.coll_colors[coll],
-                    marker="o")
+            ax.plot(point.xx, pct, **self.metadata.get_plot_attr(coll))
 
-        basename = f"period-{self.period[0]}-{self.period[1]-1}"
+        if self.period is not None:
+            basename = f'period-{self.period[0]}-{self.period[1]-1}'
+        else:
+            basename = f'period-all'
         os.makedirs(dir_result, exist_ok=True)
         if self.metadata.pdf:
-            filename = os.path.join(dir_result, f"{basename}.pdf")
+            filename = os.path.join(dir_result, f'{basename}.pdf')
             print(filename)
             fig.savefig(filename)
         if self.metadata.png:
-            filename = os.path.join(dir_result, f"{basename}.png")
+            filename = os.path.join(dir_result, f'{basename}.png')
             print(filename)
             fig.savefig(filename, dpi=self.metadata.png)
         plt.close(fig)
@@ -376,11 +421,16 @@ class TimeSeries:
         self.metadata = metadata
         self.colls = colls
         self.samplelist = samplelist
+        self.overall = MultiCurve(metadata, None, colls, samplelist)
         self.curves = {}
         self.curvelist = []
         for period in metadata.periods:
             sl = filter_period(samplelist, period)
-            curve = MultiCurve(metadata, period, colls, sl)
+            curve = MultiCurve(metadata,
+                               period,
+                               colls,
+                               sl,
+                               overall=self.overall)
             self.curves[period] = curve
             self.curvelist.append(curve)
 
@@ -389,6 +439,7 @@ class TimeSeries:
         print(file=f)
         for curve in self.curvelist:
             curve.print_summary(f)
+        self.overall.print_overall(f)
 
     def print_freq(self, f, top):
         print(self.metadata.title, file=f)
@@ -494,7 +545,7 @@ class TimeSeries:
         basename = 'tokens'
         if coll:
             basename += '-' + coll
-        filename = os.path.join(dir_result, f"{basename}.html")
+        filename = os.path.join(dir_result, f'{basename}.html')
         jenv = jinja2.Environment(
             loader=jinja2.FileSystemLoader(CODE_DIR),
             autoescape=True,
@@ -512,8 +563,12 @@ class TimeSeries:
             self.plot_timeseries(dir_result, highlight)
             for coll in self.colls:
                 self.plot_timeseries_coll(dir_result, coll, highlight)
+        self.plot_overall(dir_result)
+        for coll in self.colls:
+            self.plot_overall_coll(dir_result, coll)
         for curve in self.curvelist:
             curve.plot(dir_result)
+        self.overall.plot(dir_result)
 
     def plot_start(self):
         fig = plt.figure(figsize=(7, 5))
@@ -529,7 +584,7 @@ class TimeSeries:
                            minor=False)
         ax.yaxis.set_major_formatter(MyPercentFormatter())
         for y in major_years:
-            ax.axvline(y, color="#000000", linewidth=1, alpha=0.1)
+            ax.axvline(y, color='#000000', linewidth=1, alpha=0.1)
         ax.tick_params(which='major', length=6)
         ax.tick_params(which='minor', length=2)
         return fig, ax, years
@@ -537,11 +592,11 @@ class TimeSeries:
     def plot_finish(self, fig, dir_result, basename):
         os.makedirs(dir_result, exist_ok=True)
         if self.metadata.pdf:
-            filename = os.path.join(dir_result, f"{basename}.pdf")
+            filename = os.path.join(dir_result, f'{basename}.pdf')
             print(filename)
             fig.savefig(filename)
         if self.metadata.png:
-            filename = os.path.join(dir_result, f"{basename}.png")
+            filename = os.path.join(dir_result, f'{basename}.png')
             print(filename)
             fig.savefig(filename, dpi=self.metadata.png)
         plt.close(fig)
@@ -563,7 +618,7 @@ class TimeSeries:
         ymin = infty
 
         if show_full:
-            col = "#000000" if only_full else "#808080"
+            col = '#000000' if only_full else '#808080'
             for i in self.metadata.trend_step:
                 pct = [c.get_mean_pct(i) for c in self.curvelist]
                 ymax = max(ymax, maxN(pct))
@@ -573,26 +628,18 @@ class TimeSeries:
                         color=lighter(col, i / xx),
                         linewidth=2 if only_full else 1,
                         markersize=6 if only_full else 2,
-                        marker="o")
+                        marker='o')
 
         for coll in colls:
-            col = self.metadata.coll_colors[coll]
             for i in self.metadata.trend_step:
                 pct = [c.points[coll].get_mean_pct(i) for c in self.curvelist]
                 ymax = max(ymax, maxN(pct))
                 ymin = min(ymin, minN(pct))
-                w = 1 - i / xx
-                is_open = coll in self.metadata.__dict__.get(
-                    'coll_marker_open', set())
                 ax.plot(years,
                         pct,
-                        color=lighter(col, i / xx),
-                        markeredgecolor=lighter(col, i / xx),
-                        markerfacecolor="#ffffff" if is_open else lighter(
-                            col, i / xx),
                         linewidth=2,
                         markersize=6,
-                        marker="o")
+                        **self.metadata.get_plot_attr(coll, i / xx))
 
         if ymin < 0.4 * ymax:
             ymin = 0
@@ -603,9 +650,9 @@ class TimeSeries:
         else:
             ax.set_ylim([ymin - margin, ymax + margin])
 
-        basename = "trend"
+        basename = 'trend'
         for coll in sorted(colls):
-            basename += "-" + coll
+            basename += '-' + coll
         self.plot_finish(fig, dir_result, basename)
 
     def plot_timeseries(self, dir_result, highlight):
@@ -614,27 +661,21 @@ class TimeSeries:
         if highlight:
             c = self.curves[highlight]
             ax.axvline(c.period[0],
-                       color="#000000",
+                       color='#000000',
                        linewidth=2,
-                       ls=":",
+                       ls=':',
                        alpha=0.5)
 
         for coll in self.colls:
             pct = [c.get_pct(coll) for c in self.curvelist]
-            is_open = coll in self.metadata.__dict__.get(
-                'coll_marker_open', set())
             ax.plot(years,
                     pct,
-                    color=self.metadata.coll_colors[coll],
-                    markeredgecolor=self.metadata.coll_colors[coll],
-                    markerfacecolor="#ffffff"
-                    if is_open else self.metadata.coll_colors[coll],
                     linewidth=2,
-                    marker="o")
+                    **self.metadata.get_plot_attr(coll))
 
-        basename = f"timeseries"
+        basename = f'timeseries'
         if highlight:
-            basename += f"-{highlight[0]}-{highlight[1]-1}"
+            basename += f'-{highlight[0]}-{highlight[1]-1}'
 
         self.plot_finish(fig, dir_result, basename)
 
@@ -659,19 +700,43 @@ class TimeSeries:
             ax.plot([c.period[0], c.period[0]], [up, low],
                     color=self.metadata.coll_colors[coll],
                     linewidth=2,
-                    ls=":")
-        is_open = coll in self.metadata.__dict__.get('coll_marker_open', set())
-        ax.plot(years,
-                pct,
-                color=self.metadata.coll_colors[coll],
-                markeredgecolor=self.metadata.coll_colors[coll],
-                markerfacecolor="#ffffff"
-                if is_open else self.metadata.coll_colors[coll],
-                linewidth=2,
-                marker="o")
-        basename = f"timeseries-{coll}"
+                    ls=':')
+        ax.plot(years, pct, linewidth=2, **self.metadata.get_plot_attr(coll))
+        basename = f'timeseries-{coll}'
         if highlight:
-            basename += f"-{highlight[0]}-{highlight[1]-1}"
+            basename += f'-{highlight[0]}-{highlight[1]-1}'
+        self.plot_finish(fig, dir_result, basename)
+
+    def plot_overall(self, dir_result):
+        fig, ax, years = self.plot_start()
+        pct = [c.get_pct(None) for c in self.curvelist]
+        for f in self.metadata.shading_fraction:
+            up = [c.get_up_pct_overall(f) for c in self.curvelist]
+            low = [c.get_low_pct_overall(f) for c in self.curvelist]
+            ax.fill_between(years,
+                            up,
+                            low,
+                            color='#000000',
+                            alpha=0.1,
+                            linewidth=0)
+        ax.plot(years, pct, color='#000000', marker='o')
+        basename = 'over-time'
+        self.plot_finish(fig, dir_result, basename)
+
+    def plot_overall_coll(self, dir_result, coll):
+        fig, ax, years = self.plot_start()
+        pct = [c.get_pct(coll) for c in self.curvelist]
+        for f in self.metadata.shading_fraction:
+            up = [c.get_up_pct_overall_coll(coll, f) for c in self.curvelist]
+            low = [c.get_low_pct_overall_coll(coll, f) for c in self.curvelist]
+            ax.fill_between(years,
+                            up,
+                            low,
+                            color=self.metadata.coll_colors[coll],
+                            alpha=0.1,
+                            linewidth=0)
+        ax.plot(years, pct, **self.metadata.get_plot_attr(coll))
+        basename = f'over-time-{coll}'
         self.plot_finish(fig, dir_result, basename)
 
 
@@ -684,45 +749,46 @@ class Driver:
             self.dir_result = dir_result
         else:
             assert label is not None
-            self.dir_result = DIR_RESULT + "-" + label
+            self.dir_result = DIR_RESULT + '-' + label
 
     def add_timeseries(self, ts):
         self.timeseries.append(ts)
         self.curves.extend(ts.curvelist)
+        self.curves.append(ts.overall)
 
     def calc(self, iter):
         print()
-        print("*** Calculation")
+        print('*** Calculation')
         print()
         for curve in self.curves:
             curve.calc_write_input_all()
-        args = [os.path.join(CODE_DIR, "build/type-ratio"), str(iter)]
-        print(" ".join(args))
+        args = [os.path.join(CODE_DIR, 'build/type-ratio'), str(iter)]
+        print(' '.join(args))
         subprocess.run(args, check=True)
         print()
-        print("*** Read result")
+        print('*** Read result')
         print()
         self.clean()
         self.find_best()
         for curve in self.curves:
             curve.calc_read_output_all(self.best)
         print()
-        print("*** Process result")
+        print('*** Process result')
         print()
-        summaryfile = os.path.join(self.dir_result, "summary.txt")
-        with open(summaryfile, "w") as f:
+        summaryfile = os.path.join(self.dir_result, 'summary.txt')
+        with open(summaryfile, 'w') as f:
             for ts in self.timeseries:
                 ts.print_summary(sys.stdout)
                 ts.print_summary(f)
         print()
         for ts in self.timeseries:
             ts.plot(self.dir_result)
-        freqfile = os.path.join(self.dir_result, "freq.txt")
-        with open(freqfile, "w") as f:
+        freqfile = os.path.join(self.dir_result, 'freq.txt')
+        with open(freqfile, 'w') as f:
             for ts in self.timeseries:
                 ts.print_freq(f, None)
-        freqfile = os.path.join(self.dir_result, "freq-5.txt")
-        with open(freqfile, "w") as f:
+        freqfile = os.path.join(self.dir_result, 'freq-5.txt')
+        with open(freqfile, 'w') as f:
             for ts in self.timeseries:
                 ts.print_freq(f, 5)
         for ts in self.timeseries:
@@ -736,7 +802,7 @@ class Driver:
     def find_best(self):
         by_digest = collections.defaultdict(list)
         for fn in os.listdir(DIR_OUT):
-            m = re.fullmatch(r"([0-9a-f]{64})((?:\.[0-9]+)?)", fn)
+            m = re.fullmatch(r'([0-9a-f]{64})((?:\.[0-9]+)?)', fn)
             assert m is not None, fn
             digest = m.group(1)
             suffix = m.group(2)
