@@ -689,8 +689,8 @@ class TimeSeries:
             ax.fill_between(years,
                             up,
                             low,
-                            color=self.metadata.coll_colors[coll],
-                            alpha=0.15,
+                            color='#000000',
+                            alpha=0.1,
                             linewidth=0)
         if highlight:
             c = self.curves[highlight]
@@ -733,7 +733,7 @@ class TimeSeries:
                             up,
                             low,
                             color=self.metadata.coll_colors[coll],
-                            alpha=0.1,
+                            alpha=0.15,
                             linewidth=0)
         ax.plot(years, pct, **self.metadata.get_plot_attr(coll))
         basename = f'over-time-{coll}'
