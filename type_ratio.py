@@ -689,7 +689,7 @@ class TimeSeries:
             ax.fill_between(years,
                             up,
                             low,
-                            color='#000000',
+                            color='#808080',
                             alpha=0.1,
                             linewidth=0)
         if highlight:
