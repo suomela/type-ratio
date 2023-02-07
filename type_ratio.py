@@ -1,10 +1,10 @@
 import collections
 import hashlib
+import logging
 import os
 import os.path
 import re
 import subprocess
-import sys
 import jinja2
 
 import matplotlib
@@ -148,13 +148,13 @@ class Curve(Point):
         self.digest = hashlib.sha256(sdata).hexdigest()
         os.makedirs(DIR_IN, exist_ok=True)
         filename = os.path.join(DIR_IN, self.digest)
-        print(filename)
+        logging.debug(filename)
         with open(filename, 'wb') as f:
             f.write(sdata)
 
     def calc_read_output(self, best):
         filename = os.path.join(DIR_OUT, best[self.digest])
-        print(filename)
+        logging.debug(filename)
         self.cum = []
         with open(filename) as f:
             for line in f:
@@ -406,11 +406,11 @@ class MultiCurve(Curve):
         os.makedirs(dir_result, exist_ok=True)
         if self.metadata.pdf:
             filename = os.path.join(dir_result, f'{basename}.pdf')
-            print(filename)
+            logging.debug(filename)
             fig.savefig(filename)
         if self.metadata.png:
             filename = os.path.join(dir_result, f'{basename}.png')
-            print(filename)
+            logging.debug(filename)
             fig.savefig(filename, dpi=self.metadata.png)
         plt.close(fig)
 
@@ -593,11 +593,11 @@ class TimeSeries:
         os.makedirs(dir_result, exist_ok=True)
         if self.metadata.pdf:
             filename = os.path.join(dir_result, f'{basename}.pdf')
-            print(filename)
+            logging.debug(filename)
             fig.savefig(filename)
         if self.metadata.png:
             filename = os.path.join(dir_result, f'{basename}.png')
-            print(filename)
+            logging.debug(filename)
             fig.savefig(filename, dpi=self.metadata.png)
         plt.close(fig)
 
@@ -757,30 +757,22 @@ class Driver:
         self.curves.append(ts.overall)
 
     def calc(self, iter):
-        print()
-        print('*** Calculation')
-        print()
+        logging.info(f'{self.dir_result}: calculation')
         for curve in self.curves:
             curve.calc_write_input_all()
         args = [os.path.join(CODE_DIR, 'build/type-ratio'), str(iter)]
-        print(' '.join(args))
+        logging.debug(' '.join(args))
         subprocess.run(args, check=True)
-        print()
-        print('*** Read result')
-        print()
+        logging.info(f'{self.dir_result}: read result')
         self.clean()
         self.find_best()
         for curve in self.curves:
             curve.calc_read_output_all(self.best)
-        print()
-        print('*** Process result')
-        print()
+        logging.info(f'{self.dir_result}: process result')
         summaryfile = os.path.join(self.dir_result, 'summary.txt')
         with open(summaryfile, 'w') as f:
             for ts in self.timeseries:
-                ts.print_summary(sys.stdout)
                 ts.print_summary(f)
-        print()
         for ts in self.timeseries:
             ts.plot(self.dir_result)
         freqfile = os.path.join(self.dir_result, 'freq.txt')
@@ -793,6 +785,7 @@ class Driver:
                 ts.print_freq(f, 5)
         for ts in self.timeseries:
             ts.illustrate_freq(self.dir_result)
+        logging.info(f'{self.dir_result}: done')
 
     def clean(self):
         os.makedirs(self.dir_result, exist_ok=True)

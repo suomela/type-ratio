@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 
+import logging
 import random
 import type_ratio
+
+logging.basicConfig(format='%(relativeCreated)8d %(levelname)s %(message)s',
+                    level=logging.INFO)
 
 p1, p2, p3, p4 = (1500, 1600), (1600, 1700), (1700, 1800), (1800, 1900)
 
