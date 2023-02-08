@@ -219,7 +219,9 @@ class Driver {
             string fn = p.path().filename();
             auto dot = fn.find('.');
             if (dot == string::npos) {
-                work_set.insert(fn);
+                if (in_this_part(fn)) {
+                    work_set.insert(fn);
+                }
             } else if (dot > 0) {
                 std::cerr << "unexpected file name: " << p.path() << std::endl;
             }
@@ -260,6 +262,16 @@ class Driver {
     }
 
   private:
+    bool in_this_part(string &s) {
+        int hash = 0;
+        for (char c : s) {
+            hash *= 31;
+            hash += c;
+            hash %= parts;
+        }
+        return hash == mypart;
+    }
+
     const ll iter;
     const int mypart;
     const int parts;
