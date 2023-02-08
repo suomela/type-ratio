@@ -15,9 +15,15 @@ jobs:
       run: sudo apt-get update -y
     - name: Install packages
       run: sudo apt-get install -y python3-jinja2 python3-matplotlib
-    - name: Build
-      run: ./build.sh
-    - name: Test
+    - name: Build (debug)
+      run: ./build-debug.sh
+    - name: Test (debug)
       run: ./test.py
-    - name: Test library
+    - name: Test library (debug)
+      run: ./test-lib.py
+    - name: Build (release)
+      run: ./build.sh
+    - name: Test (release)
+      run: ./test.py
+    - name: Test library (release)
       run: ./test-lib.py
