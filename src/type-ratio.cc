@@ -206,7 +206,7 @@ class Work {
 
 class Driver {
   public:
-    explicit Driver(ll iter_) : iter{iter_} {}
+    explicit Driver(ll iter_, int mypart_, int parts_) : iter{iter_}, mypart{mypart_}, parts{parts_} {}
 
     void run() {
         get_work();
@@ -261,27 +261,43 @@ class Driver {
 
   private:
     const ll iter;
+    const int mypart;
+    const int parts;
     vector<Work> work;
 };
 
 } // namespace type_ratio
 
 int main(int argc, const char **argv) {
-    if (argc <= 1) {
-        std::cerr << "usage: " << argv[0] << " ITER" << std::endl;
+    if (argc != 2 && argc != 4) {
+        std::cerr << "usage: " << argv[0] << " ITER [PART-NUMBER NUMBER-OF-PARTS]" << std::endl;
         std::exit(1);
     }
 
     long long iter;
+    int mypart = 0;
+    int parts = 1;
     try {
         iter = std::stoll(argv[1]);
+        if (argc == 4) {
+            mypart = std::stoi(argv[2]);
+            parts = std::stoi(argv[3]);
+        }
     } catch (const std::logic_error &e) {
+        std::cerr << "invalid argument" << std::endl;
+        std::exit(1);
+    }
+    if (mypart == parts) {
+        // Can specify parts 0/4 ... 3/4 or 1/4 ... 4/4
+        mypart = 0;
+    }
+    if (!(0 <= iter && 0 <= mypart && mypart < parts)) {
         std::cerr << "invalid argument" << std::endl;
         std::exit(1);
     }
 
     try {
-        type_ratio::Driver d(iter);
+        type_ratio::Driver d(iter, mypart, parts);
         d.run();
     } catch (const std::system_error &e) {
         std::cerr << e.what() << std::endl;
