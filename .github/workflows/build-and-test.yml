@@ -19,11 +19,11 @@ jobs:
       run: ./build-debug.sh
     - name: Test (debug)
       run: ./test.py
-    - name: Test library (debug)
-      run: ./test-lib.py
     - name: Build (release)
       run: ./build.sh
     - name: Test (release)
       run: ./test.py
-    - name: Test library (release)
+    - name: Test library (first pass)
+      run: ./test-lib.py
+    - name: Test library (reusing results)
       run: ./test-lib.py
