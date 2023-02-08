@@ -40,3 +40,9 @@ Author
 ------
 
 Jukka Suomela, https://jukkasuomela.fi/
+
+
+Acknowledgments
+---------------
+
+The authors wish to acknowledge CSC – IT Center for Science, Finland, for computational resources.
