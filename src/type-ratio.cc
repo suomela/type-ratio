@@ -26,9 +26,6 @@ const fs::path data_dir = "type-ratio-data";
 const fs::path dir_in = fs::path(data_dir) / "in";
 const fs::path dir_out = fs::path(data_dir) / "out";
 
-constexpr int hexcount = 256 / 4;
-const char *hexdigits = "0123456789abcdef";
-
 class Work {
   public:
     explicit Work(string fn_, ll iter_) : fn{fn_}, iter{iter_} {}
@@ -220,24 +217,30 @@ class Driver {
         std::unordered_set<string> work_set;
         for (const auto &p : fs::directory_iterator(dir_in)) {
             string fn = p.path().filename();
-            assert(fn.size() == hexcount);
-            assert(fn.find_first_not_of(hexdigits) == string::npos);
-            work_set.insert(fn);
+            auto dot = fn.find('.');
+            if (dot == string::npos) {
+                work_set.insert(fn);
+            } else if (dot > 0) {
+                std::cerr << "unexpected file name: " << p.path() << std::endl;
+            }
         }
         fs::create_directories(dir_out);
         for (const auto &p : fs::directory_iterator(dir_out)) {
             string fn2 = p.path().filename();
-            assert(fn2.size() >= hexcount);
-            string fn = fn2.substr(0, hexcount);
-            assert(fn.find_first_not_of(hexdigits) == string::npos);
-            if (fn2.size() > hexcount) {
-                assert(fn2[hexcount] == '.');
-                ll has_it = std::stoll(fn2.substr(hexcount + 1));
-                if (has_it >= iter) {
-                    work_set.erase(fn);
+            auto dot = fn2.find('.');
+            if (dot == string::npos) {
+                work_set.erase(fn2);
+            } else if (dot > 0) {
+                string fn = fn2.substr(0, dot);
+                string ext = fn2.substr(dot + 1);
+                try {
+                    ll has_it = std::stoll(ext);
+                    if (has_it >= iter) {
+                        work_set.erase(fn);
+                    }
+                } catch (const std::logic_error &e) {
+                    std::cerr << "unexpected file name: " << p.path() << std::endl;
                 }
-            } else {
-                work_set.erase(fn);
             }
         }
         vector<string> todo(begin(work_set), end(work_set));
