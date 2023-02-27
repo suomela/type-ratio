@@ -363,7 +363,7 @@ class MultiCurve(Curve):
         for point in self.pointlist:
             self.print_point_freq(point, f, top)
 
-    def plot(self, dir_result):
+    def plot(self, dir_result, other=None):
         fig = plt.figure(figsize=(7, 5))
         ax = fig.add_axes([0.12, 0.125, 0.85, 0.86])
         ax.set_ylim(self.metadata.yrange)
@@ -383,24 +383,35 @@ class MultiCurve(Curve):
                             alpha=0.1,
                             linewidth=0)
 
-        for coll in self.colls:
-            point = self.points[coll]
+        def plot_point(coll, point):
             if point.xx == 0:
-                continue
+                return
             pct = point.yy / point.xx * 100
             f = min(self.metadata.shading_fraction)
             up = self.get_up_pct(point.xx, f)
             low = self.get_low_pct(point.xx, f)
+            if coll:
+                color = self.metadata.coll_colors[coll]
+                attr = self.metadata.get_plot_attr(coll)
+            else:
+                color = '#000000'
+                attr = dict(color=color, marker='o')
             ax.plot([point.xx, point.xx], [up, low],
-                    color=self.metadata.coll_colors[coll],
+                    color=color,
                     linewidth=2,
                     ls=':')
-            is_open = coll in self.metadata.__dict__.get(
-                'coll_marker_open', set())
-            ax.plot(point.xx, pct, **self.metadata.get_plot_attr(coll))
+            ax.plot(point.xx, pct, **attr)
 
+        if other is None:
+            for coll in self.colls:
+                plot_point(coll, self.points[coll])
+        else:
+            plot_point(None, other)
         if self.period is not None:
             basename = f'period-{self.period[0]}-{self.period[1]-1}'
+        elif other is not None:
+            assert other.period is not None
+            basename = f'period-all-{other.period[0]}-{other.period[1]-1}'
         else:
             basename = f'period-all'
         os.makedirs(dir_result, exist_ok=True)
@@ -569,6 +580,8 @@ class TimeSeries:
         for curve in self.curvelist:
             curve.plot(dir_result)
         self.overall.plot(dir_result)
+        for other in self.curvelist:
+            self.overall.plot(dir_result, other)
 
     def plot_start(self):
         fig = plt.figure(figsize=(7, 5))
