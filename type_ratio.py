@@ -521,6 +521,8 @@ class TimeSeries:
             for curve in self.curvelist:
                 col = curve.period
                 s = col_totals_s[col]
+                if s == 0:
+                    continue
                 for t in tokens:
                     x = token_counts[i][(t, col)]
                     f1 = max((x - 1) / s, 0)
