@@ -5,6 +5,11 @@ This repository contains source code connected to the following article:
 
 - Rodríguez-Puente, Paula, Tanja Säily and Jukka Suomela. "New methods for analysing diachronic suffix competition across registers: How *-ity* gained ground on *-ness* in Early Modern English". *International Journal of Corpus Linguistics.* https://doi.org/10.1075/ijcl.22014.rod
 
+News
+----
+
+For a new version of this tool, see https://github.com/suomela/types3
+
 Building
 --------
 
