@@ -1,4 +1,5 @@
 import collections
+import csv
 import hashlib
 import logging
 import os
@@ -128,9 +129,10 @@ class Curve(Point):
 
     def calc_write_input(self):
         self.sorted_tokens = [sorted(tt) for tt in self.tokens]
-        self.tokenmaps = [{t: i
-                           for i, t in enumerate(tt)}
-                          for tt in self.sorted_tokens]
+        self.tokenmaps = [{
+            t: i
+            for i, t in enumerate(tt)
+        } for tt in self.sorted_tokens]
         data = []
         for s in self.samplelist:
             row = []
@@ -632,12 +634,16 @@ class TimeSeries:
         ymax = 0
         ymin = infty
 
+        curves = []
+        curves.append(['', ''] + years)
+
         if show_full:
             col = '#000000' if only_full else '#808080'
             for i in self.metadata.trend_step:
                 pct = [c.get_mean_pct(i) for c in self.curvelist]
                 ymax = max(ymax, maxN(pct))
                 ymin = min(ymin, minN(pct))
+                curves.append(['all', i] + pct)
                 ax.plot(years,
                         pct,
                         color=lighter(col, i / xx),
@@ -650,6 +656,7 @@ class TimeSeries:
                 pct = [c.points[coll].get_mean_pct(i) for c in self.curvelist]
                 ymax = max(ymax, maxN(pct))
                 ymin = min(ymin, minN(pct))
+                curves.append([coll, i] + pct)
                 ax.plot(years,
                         pct,
                         linewidth=2,
@@ -669,6 +676,12 @@ class TimeSeries:
         for coll in sorted(colls):
             basename += '-' + coll
         self.plot_finish(fig, dir_result, basename)
+
+        filename = os.path.join(dir_result, f'{basename}.csv')
+        logging.debug(filename)
+        with open(filename, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(curves)
 
     def plot_timeseries(self, dir_result, highlight):
         fig, ax, years = self.plot_start()
