@@ -1,9 +1,11 @@
 TypeRatio: comparing competing suffixes
 =======================================
 
-This repository contains source code connected to the following article:
+This repository contains source code connected to the following articles:
 
-- Rodríguez-Puente, Paula, Tanja Säily and Jukka Suomela. "New methods for analysing diachronic suffix competition across registers: How *-ity* gained ground on *-ness* in Early Modern English". *International Journal of Corpus Linguistics.* https://doi.org/10.1075/ijcl.22014.rod
+- Paula Rodríguez-Puente, Tanja Säily and Jukka Suomela (2022). "New methods for analysing diachronic suffix competition across registers: How *-ity* gained ground on *-ness* in Early Modern English." *International Journal of Corpus Linguistics.* https://doi.org/10.1075/ijcl.22014.rod
+
+- Tanja Säily, Martin Hilpert and Jukka Suomela (to appear). "New approaches to investigating change in derivational productivity: Gender and internal factors in the development of -ity and -ness, 1600–1800." Patricia Ronan, Theresa Neumaier, Lisa Westermayer, Andreas Weilinghoff & Sarah Buschfeld (eds.), *Crossing boundaries through corpora: Innovative approaches to corpus linguistics* (Studies in Corpus Linguistics). Amsterdam: John Benjamins.
 
 News
 ----
